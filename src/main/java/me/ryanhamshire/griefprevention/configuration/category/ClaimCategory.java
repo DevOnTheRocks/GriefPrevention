@@ -37,18 +37,18 @@ public class ClaimCategory extends ConfigCategory {
     public List<String> accessTrustCommands = new ArrayList<>();
     @Setting(value = "auto-claim-radius", comment = "Radius used for auto-created claims. Set to -1 to disable.")
     public int claimRadius = 4;
-    @Setting(value = "cleanup-task-interval", comment = "The interval in minutes for restoring blocks in an expired claim. Set to 0 to disable. Note: This only supports vanilla blocks. Use with caution if using custom biomes.")
+    @Setting(value = "cleanup-task-interval", comment = "The interval in minutes for attempting to remove expired claims. Set to 0 to disable.")
     public int cleanupTaskInterval = 5;
     @Setting(value = "deliver-manuals", comment = "Send players manuals on claim creation.")
     public boolean deliverManuals = false;
-    @Setting(value = "auto-nature-restore", comment = "Whether survival claims will be automatically restored to nature when auto-deleted.")
+    @Setting(value = "auto-nature-restore", comment = "Whether survival claims will be automatically restored to nature when auto-deleted. "
+            + "Note: This only supports vanilla blocks. Use with caution if using custom biomes.")
     public boolean claimAutoNatureRestore = false;
     @Setting(value = "investigation-tool", comment = "The item used to investigate claims with a right-click.")
     public String investigationTool = "minecraft:stick";
     @Setting(value = "modification-tool", comment = "The item used to create/resize claims with a right click.")
     public String modificationTool = "minecraft:golden_shovel";
-    @Setting(value = "claims-mode",
-            comment = "The mode used when creating claims. (0 = Disabled, 1 = Survival, 2 = Creative)")
+    @Setting(value = "claims-mode", comment = "The mode used when creating claims. (0 = Disabled, 1 = Survival, 2 = Creative)")
     public int claimMode = 1;
     @Setting(value = "bank-tax-system", comment = "Whether to enable the bank/tax system for claims. Set to true to enable.")
     public boolean bankTaxSystem = false;
