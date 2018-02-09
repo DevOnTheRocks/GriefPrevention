@@ -104,27 +104,30 @@ public class CommandPlayerInfo implements CommandExecutor {
             claimSizeLimit = Text.of(TextColors.GRAY, playerData.optionMaxClaimSizeBasicX + "," + playerData.optionMaxClaimSizeBasicY + "," + playerData.optionMaxClaimSizeBasicZ);
         }
 
-        Text townTaxRate = Text.of(
-                TextColors.GRAY, "TOWN", TextColors.WHITE, " : ", TextColors.GREEN, playerData.optionTaxRateTown, 
-                TextColors.GRAY, " BASIC", TextColors.WHITE, " : ", TextColors.GREEN, playerData.optionTaxRateTownBasic, 
-                TextColors.GRAY, " SUB", TextColors.WHITE, " : ", TextColors.GREEN, playerData.optionTaxRateTownSubdivision);
-        Text claimTaxRate = Text.of(
-                TextColors.GRAY, "BASIC", TextColors.WHITE, " : ", TextColors.GREEN, playerData.optionTaxRateBasic, 
-                TextColors.GRAY, " SUB", TextColors.WHITE, " : ", TextColors.GREEN, playerData.optionTaxRateSubdivision);
-        Text currentTaxRateText = Text.of(TextColors.YELLOW, "Current Claim Tax Rate", TextColors.WHITE, " : ", TextColors.RED, "N/A");
+        final Text WHITE_SEMI_COLON = Text.of(TextColors.WHITE, " : ");
+        final Text claimExpiration = Text.of(
+                TextColors.GRAY, "TOWN", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionClaimExpirationTown,
+                TextColors.GRAY, " BASIC", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionClaimExpirationBasic,
+                TextColors.GRAY, " SUB", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionClaimExpirationSubdivision,
+                TextColors.GRAY, " CHEST", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionClaimExpirationChest);
+        final Text townTaxRate = Text.of(
+                TextColors.GRAY, "TOWN", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionTaxRateTown,
+                TextColors.GRAY, " BASIC", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionTaxRateTownBasic,
+                TextColors.GRAY, " SUB", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionTaxRateTownSubdivision);
+        final Text claimTaxRate = Text.of(
+                TextColors.GRAY, "BASIC", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionTaxRateBasic,
+                TextColors.GRAY, " SUB", WHITE_SEMI_COLON, TextColors.GREEN, playerData.optionTaxRateSubdivision);
+        Text currentTaxRateText = Text.of(TextColors.YELLOW, "Current Claim Tax Rate", WHITE_SEMI_COLON, TextColors.RED, "N/A");
         if (src instanceof Player) {
             Player player = (Player) src;
             if (player.getUniqueId().equals(user.getUniqueId())) {
                 final GPClaim claim = GriefPreventionPlugin.instance.dataStore.getClaimAt(player.getLocation());
                 if (claim != null && !claim.isWilderness()) {
                     final double playerTaxRate = GPOptionHandler.getClaimOptionDouble(user, claim, GPOptions.Type.TAX_RATE, playerData);
-                    currentTaxRateText = Text.of(
-                            TextColors.YELLOW, "Current Claim Tax Rate", TextColors.WHITE, " : ",
-                            TextColors.GREEN, playerTaxRate);
+                    currentTaxRateText = Text.of(TextColors.YELLOW, "Current Claim Tax Rate", WHITE_SEMI_COLON, TextColors.GREEN, playerTaxRate);
                 }
             }
         }
-        final Text WHITE_SEMI_COLON = Text.of(TextColors.WHITE, " : ");
         final double claimableChunks = GriefPreventionPlugin.CLAIM_BLOCK_SYSTEM == ClaimBlockSystem.VOLUME ? (playerData.getRemainingClaimBlocks() / 65536.0) : (playerData.getRemainingClaimBlocks() / 256.0);
         final Text uuidText = Text.of(TextColors.YELLOW, "UUID", WHITE_SEMI_COLON, TextColors.GRAY, user.getUniqueId());
         final Text worldText = Text.of(TextColors.YELLOW, "World", WHITE_SEMI_COLON, TextColors.GRAY, worldProperties.getWorldName());
@@ -137,6 +140,7 @@ public class CommandPlayerInfo implements CommandExecutor {
         final Text minLevelText = Text.of(TextColors.YELLOW, "Minimum Claim Level", WHITE_SEMI_COLON, TextColors.GREEN, playerData.getMinClaimLevel());
         final Text maxLevelText = Text.of(TextColors.YELLOW, "Maximum Claim Level", WHITE_SEMI_COLON, TextColors.GREEN, playerData.getMaxClaimLevel());
         final Text abandonRatioText = Text.of(TextColors.YELLOW, "Abandoned Return Ratio", WHITE_SEMI_COLON, TextColors.GREEN, playerData.getAbandonedReturnRatio());
+        final Text claimExpirationText = Text.of(TextColors.YELLOW, "Claim Expiration", WHITE_SEMI_COLON, TextColors.GREEN, claimExpiration);
         final Text globalTownTaxText = Text.of(TextColors.YELLOW, "Global Town Tax Rate", WHITE_SEMI_COLON, TextColors.GREEN, townTaxRate);
         final Text globalClaimTaxText = Text.of(TextColors.YELLOW, "Global Claim Tax Rate", WHITE_SEMI_COLON, TextColors.GREEN, claimTaxRate);
         final Text totalTaxText = Text.of(TextColors.YELLOW, "Total Tax", WHITE_SEMI_COLON, TextColors.GREEN, playerData.getTotalTax());
@@ -156,6 +160,7 @@ public class CommandPlayerInfo implements CommandExecutor {
         claimsTextList.add(minLevelText);
         claimsTextList.add(maxLevelText);
         claimsTextList.add(abandonRatioText);
+        claimsTextList.add(claimExpirationText);
         if (GriefPreventionPlugin.getGlobalConfig().getConfig().claim.bankTaxSystem) {
             claimsTextList.add(currentTaxRateText);
             claimsTextList.add(globalTownTaxText);
@@ -174,14 +179,11 @@ public class CommandPlayerInfo implements CommandExecutor {
                 // ignore
             }
             if (lastActive != null) {
-                claimsTextList.add(Text.of(TextColors.YELLOW, "Last Active", TextColors.WHITE, " : ", TextColors.GRAY, lastActive));
+                claimsTextList.add(Text.of(TextColors.YELLOW, "Last Active", WHITE_SEMI_COLON, TextColors.GRAY, lastActive));
             }
         }
 
-        PaginationService paginationService = Sponge.getServiceManager().provide(PaginationService.class).get();
-        PaginationList.Builder paginationBuilder = paginationService.builder()
-                .title(Text.of(TextColors.AQUA, "Player Info")).padding(Text.of(TextStyles.STRIKETHROUGH, "-")).contents(claimsTextList);
-        paginationBuilder.sendTo(src);
+        PaginationList.builder().title(Text.of(TextColors.AQUA, "Player Info")).padding(Text.of(TextStyles.STRIKETHROUGH, "-")).contents(claimsTextList).sendTo(src);
 
         return CommandResult.success();
     }
